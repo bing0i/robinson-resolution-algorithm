@@ -4,7 +4,7 @@ import sys
 def readInputFile(path):
     data = {
         "clauses": [],
-        "provingClause": 0,
+        "provingClause": [],
         "steps": [],
     }
     tmpLine = ""
@@ -43,37 +43,56 @@ def getClause(str):
     return clause
 
 
-def getShortestClause(data):
+def getShortestClause(clauses, discardedClauses):
     min = 1000000
     minClause = []
-    index = 0
-    for i, clause in enumerate(data["clauses"]):
-        if len(clause) < min:
-            min = len(clause)
-            minClause = clause[:]
-            index = i
-    del data["clauses"][index]
+    isDuplicate = False
 
+    for clause in clauses:
+        if len(clause) < min:
+            for discardedClause in discardedClauses:
+                if set(discardedClause) == set(clause):
+                    isDuplicate = True
+                    break
+
+            if not isDuplicate:
+                min = len(clause)
+                minClause = clause[:]
+
+            isDuplicate = False
+
+    if len(minClause) == 0:
+        return None
     return minClause
 
 
-def getOppositeClause(clauses, targetClause):
+def getOppositeClause(clauses, targetClause, discardedClauses):
     min = 1000000
-    index = 0
     oppositeClause = []
+    isDuplicate = False
+
     for targetNum in targetClause:
-        for i, clause in enumerate(clauses):
+        for clause in clauses:
             for num in clause:
                 if (
                     targetNum == -num
                     and len(clause) < min
                     and set(clause) != set(targetClause)
                 ):
-                    oppositeClause = clause[:]
-                    min = len(clause)
-                    index = i
+                    for discardedClause in discardedClauses:
+                        if set(discardedClause) == set(clause):
+                            isDuplicate = True
+                            break
 
-    return oppositeClause, index
+                    if not isDuplicate:
+                        oppositeClause = clause[:]
+                        min = len(clause)
+
+                    isDuplicate = False
+
+    if len(oppositeClause) == 0:
+        return None
+    return oppositeClause
 
 
 def resolveTwoOppositeClauses(shorterClause, longerClause):
@@ -86,45 +105,45 @@ def resolveTwoOppositeClauses(shorterClause, longerClause):
     return resultClause
 
 
+def getShorterAndLongerClause(clause1, clause2):
+    if len(clause1) < len(clause2):
+        shorterClause = clause1[:]
+        longerClause = clause2[:]
+    else:
+        shorterClause = clause2[:]
+        longerClause = clause1[:]
+
+    return shorterClause, longerClause
+
+
 def solveByResolution(data):
-    index = 0
     steps = [data["clauses"][:]]
-    while True:
-        if len(data["clauses"]) == 1:
-            clause1 = data["clauses"][0]
-            (clause2, index) = getOppositeClause(data["KB"], clause1)
-            del data["clauses"][0]
+    discardedClauses = []
+    isDiscarded = False
 
-            if len(clause1) > len(clause2):
-                tmpClause = clause1[:]
-                clause1 = clause2[:]
-                clause2 = tmpClause[:]
-            resultClause = resolveTwoOppositeClauses(clause1, clause2)
+    while len(discardedClauses) != len(data["KB"]):
 
-            data["clauses"].append(resultClause)
-            steps.append(data["clauses"][:])
-
-            if len(resultClause) == 0:
-                return steps, True
-
-            for clause in data["KB"]:
-                if set(resultClause) == set(clause):
-                    return steps, False
-
-            data["KB"].append(resultClause)
+        clause1 = getShortestClause(data["KB"], discardedClauses)
+        clause2 = getOppositeClause(data["KB"], clause1, discardedClauses)
+        if clause2 == None:
+            discardedClauses.append(clause1)
             continue
 
-        clause1 = getShortestClause(data)
-        (clause2, index) = getOppositeClause(data["clauses"], clause1)
-        del data["clauses"][index]
-
-        resultClause = resolveTwoOppositeClauses(clause1, clause2)
+        (shorterClause, longerClause) = getShorterAndLongerClause(clause1, clause2)
+        resultClause = resolveTwoOppositeClauses(shorterClause, longerClause)
         if len(resultClause) == 0:
             return steps, True
+        for clause in data["KB"]:
+            if set(resultClause) == set(clause):
+                discardedClauses.append(longerClause)
+                isDiscarded = True
+                break
 
-        data["KB"].append(resultClause)
-        data["clauses"].append(resultClause)
-        steps.append(data["clauses"][:])
+        if not isDiscarded:
+            data["KB"].append(resultClause)
+            steps.append(data["KB"][:])
+
+        isDiscarded = False
 
     return steps, False
 
@@ -132,7 +151,6 @@ def solveByResolution(data):
 def convertStepsToCNF(steps):
     CNFSteps = []
     CNFStep = []
-    literal = ""
     CNFClause = ""
     for step in steps:
         for clause in step:

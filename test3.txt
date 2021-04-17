@@ -1,0 +1,9 @@
+KB
+p|q
+p|r
+~p|r
+r|s
+r|~q
+~s|~q
+ENDKB
+r

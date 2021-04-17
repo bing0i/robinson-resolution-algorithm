@@ -1,5 +1,6 @@
 m
 ~p|q,~q|r,~p|~r|s,~r|k,~k|m,r,~m
-~p|q,~q|r,~p|~r|s,~k|m,~m,k
-~p|q,~q|r,~p|~r|s,k,~k
+~p|q,~q|r,~p|~r|s,~r|k,~k|m,r,~m,k
+~p|q,~q|r,~p|~r|s,~r|k,~k|m,r,~m,k,~p|s
+~p|q,~q|r,~p|~r|s,~r|k,~k|m,r,~m,k,~p|s,~k
 True
