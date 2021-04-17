@@ -1,0 +1,8 @@
+d
+~a|b,~b,a|c|d,~c|e,~f|~e,f,~d
+~a|b,~b,a|c|d,~c|e,~f|~e,f,~d,~a
+~a|b,~b,a|c|d,~c|e,~f|~e,f,~d,~a,~e
+~a|b,~b,a|c|d,~c|e,~f|~e,f,~d,~a,~e,a|c
+~a|b,~b,a|c|d,~c|e,~f|~e,f,~d,~a,~e,a|c,c
+~a|b,~b,a|c|d,~c|e,~f|~e,f,~d,~a,~e,a|c,c,~c
+True

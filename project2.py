@@ -122,9 +122,12 @@ def solveByResolution(data):
     isDiscarded = False
 
     while len(discardedClauses) != len(data["KB"]):
-
         clause1 = getShortestClause(data["KB"], discardedClauses)
-        clause2 = getOppositeClause(data["KB"], clause1, discardedClauses)
+        if clause1 == None:
+            return steps, False
+        else:
+            clause2 = getOppositeClause(data["KB"], clause1, discardedClauses)
+
         if clause2 == None:
             discardedClauses.append(clause1)
             continue

@@ -1,0 +1,6 @@
+r
+p|q,~p|r,~q|r,~r
+p|q,~p|r,~q|r,~r,~p
+p|q,~p|r,~q|r,~r,~p,~q
+p|q,~p|r,~q|r,~r,~p,~q,q
+True
