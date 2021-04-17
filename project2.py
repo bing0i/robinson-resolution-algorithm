@@ -17,6 +17,7 @@ def readInputFile(path):
         data["CNFProvingClause"] = inputFile.readline().rstrip("\n")
         data["provingClause"] = getClause(data["CNFProvingClause"])
         data["clauses"].append([-num for num in data["provingClause"]])
+        data["KB"] = data["clauses"][:]
 
     return data
 
@@ -56,20 +57,23 @@ def getShortestClause(data):
     return minClause
 
 
-def getOppositeClause(data, targetClause):
+def getOppositeClause(clauses, targetClause):
     min = 1000000
     index = 0
     oppositeClause = []
     for targetNum in targetClause:
-        for i, clause in enumerate(data["clauses"]):
+        for i, clause in enumerate(clauses):
             for num in clause:
-                if targetNum == -num and len(clause) < min:
+                if (
+                    targetNum == -num
+                    and len(clause) < min
+                    and set(clause) != set(targetClause)
+                ):
                     oppositeClause = clause[:]
                     min = len(clause)
                     index = i
-    del data["clauses"][index]
 
-    return oppositeClause
+    return oppositeClause, index
 
 
 def resolveTwoOppositeClauses(shorterClause, longerClause):
@@ -83,20 +87,44 @@ def resolveTwoOppositeClauses(shorterClause, longerClause):
 
 
 def solveByResolution(data):
+    index = 0
     steps = [data["clauses"][:]]
-    clause1 = getShortestClause(data)
-    clause2 = getOppositeClause(data, clause1)
-    resultClause = resolveTwoOppositeClauses(clause1, clause2)
-    data["clauses"].append(resultClause)
-    steps.append(data["clauses"][:])
-    while len(resultClause) != 0 or len(data["clauses"]) != 1:
+    while True:
+        if len(data["clauses"]) == 1:
+            clause1 = data["clauses"][0]
+            (clause2, index) = getOppositeClause(data["KB"], clause1)
+            del data["clauses"][0]
+
+            if len(clause1) > len(clause2):
+                tmpClause = clause1[:]
+                clause1 = clause2[:]
+                clause2 = tmpClause[:]
+            resultClause = resolveTwoOppositeClauses(clause1, clause2)
+
+            data["clauses"].append(resultClause)
+            steps.append(data["clauses"][:])
+
+            if len(resultClause) == 0:
+                return steps, True
+
+            for clause in data["KB"]:
+                if set(resultClause) == set(clause):
+                    return steps, False
+
+            data["KB"].append(resultClause)
+            continue
+
         clause1 = getShortestClause(data)
-        clause2 = getOppositeClause(data, clause1)
+        (clause2, index) = getOppositeClause(data["clauses"], clause1)
+        del data["clauses"][index]
+
         resultClause = resolveTwoOppositeClauses(clause1, clause2)
-        data["clauses"].append(resultClause)
-        steps.append(data["clauses"][:])
         if len(resultClause) == 0:
             return steps, True
+
+        data["KB"].append(resultClause)
+        data["clauses"].append(resultClause)
+        steps.append(data["clauses"][:])
 
     return steps, False
 

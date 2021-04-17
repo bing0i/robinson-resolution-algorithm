@@ -1,0 +1,10 @@
+KB
+~c|~d|y
+~r|~z|c
+~b|d
+~d|~r|z
+b
+~r|d
+~d|r
+ENDKB
+y
